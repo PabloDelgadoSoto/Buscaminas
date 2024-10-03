@@ -3,12 +3,15 @@ let user;
 let idUser;
 let visto = [];
 let ocupado = [];
+var visitados = [];
+let cont;
+var rojos = [];
 const dificultad = {
-    '1':[9, 10],
-    '2':[16, 40],
-    '3':[21, 99]
+    '1': [9, 10],
+    '2': [16, 40],
+    '3': [21, 99]
 }
-var dif='2';
+var dif = '2';
 var tablero = dificultad[dif][0];
 var minas = dificultad[dif][1];
 
@@ -43,21 +46,18 @@ const ponerMinas = function () {
         let uno = Math.floor(Math.random() * tablero);
         let dos = Math.floor(Math.random() * tablero);
         let lugar = uno + '-' + dos;
-        if(inArray(ocupado, lugar)){
+        if (inArray(ocupado, lugar)) {
             i--;
             continue;
         }
         ocupado[i] = lugar;
     }
     calcularMinas(ocupado);
-    for (let i = 0; i < ocupado.length; i++) {
-        let pH = document.getElementById(ocupado[i]);
-        pH.innerHTML = 'X';
-    }
 }
 
 const calcularMinas = function (minas) {
     let avisos = [];
+    rojos = [];
     minas.forEach(mina => {
         let p = mina.split('-');
         let u = parseInt(p[0]);
@@ -66,13 +66,15 @@ const calcularMinas = function (minas) {
             for (let j = -1; j < 2; j++) {
                 let ph1 = u + i;
                 let ph2 = d + j;
-                avisos.push(desbordar(ph1) + '-' + desbordar(ph2));
+                let resultado = desbordar(ph1) + '-' + desbordar(ph2);
+                avisos.push(resultado);
             }
         }
     });
     avisos.forEach(aviso => {
-        let a = document.getElementById(aviso);
-        a.innerHTML = 'R';
+        if(!inArray(ocupado, aviso)){
+            rojos.push(aviso);
+        }
     });
 }
 
@@ -94,33 +96,36 @@ const desbordar = function (num) {
     return num;
 }
 
-var visitados = [];
 const hacerClic = function (event) {
     if (!event.altKey) {
         marcarXClic(event.target.getAttribute('id'));
         visitados = [];
     } else {
         let marca = document.getElementsByClassName('cursor');
+        if(marca[0].getAttribute('style')=='background-color:yellow'){
+            marca[0].setAttribute('style', 'background-color:blue');
+            return;
+        }
         marca[0].setAttribute('style', 'background-color:yellow');
     }
 }
 
 const marcarXClic = function (id) {
     let marca = document.getElementById(id);
-    if (marca.innerHTML == 'X') {
+    if (inArray(ocupado, id)) {
         perder();
         return;
     }
-    if (marca.innerHTML == 'R') {
+    if (inArray(rojos, id)) {
         marca.setAttribute('style', 'background-color:red');
+        marca.innerHTML = calcularAlrededor(id);
         return;
     }
     marca.setAttribute('style', 'background-color:green');
-    marca.setAttribute('class','');
-    visitados.push(id)
+    visitados.push(id);
     let mostrar = recorrer(marca);
-    for(let i=0;i<mostrar.length;i++){
-        if(!inArray(visitados,mostrar[i])){
+    for (let i = 0; i < mostrar.length; i++) {
+        if (!inArray(visitados, mostrar[i])) {
             marcarXClic(mostrar[i]);
             visitados.push(mostrar[i]);
         }
@@ -155,8 +160,28 @@ const recorrer = function (lugar) {
     return mostrar;
 }
 
+const calcularAlrededor = function(id){
+    cont = 0;
+    let vistos = [];
+    let p = id.split('-');
+    let u = parseInt(p[0]);
+    let d = parseInt(p[1]);
+    for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+            let ph1 = u + i;
+            let ph2 = d + j;
+            let resultado = desbordar(ph1) + '-' + desbordar(ph2);
+            if(inArray(ocupado, resultado) && !inArray(vistos, resultado)){
+                cont++;
+                vistos.push(resultado);
+            }
+        }
+    }
+    return cont;
+}
+
 const perder = function (event) {
-    while(table.firstChild){
+    while (table.firstChild) {
         table.removeChild(table.firstChild);
     }
     hacerTabla();
@@ -169,11 +194,11 @@ const inArray = function (arr, e) {
     return false;
 };
 
-const cambiarDificultad = function(num){
-    dif=num;
+const cambiarDificultad = function (num) {
+    dif = num;
     tablero = dificultad[dif][0];
     minas = dificultad[dif][1];
     perder();
 }
 
-// ver los alrededores del array ocupados para poner numeros, que todo empiece en 0 y se vaya sumando, al acabar todos los 0 ponen innerHTML ''
+// numeros en los rojos
