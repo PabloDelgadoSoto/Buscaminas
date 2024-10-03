@@ -1,0 +1,48 @@
+table{
+    margin: auto;
+}
+
+td{
+    width:10px;
+    height:10px;
+    background-color: blue;
+    font-size: 10%;
+    text-align: center;
+}
+
+section{
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    height: 50%;;
+}
+
+button{
+    height: 50%;
+    width: 30%;
+    color: black;
+}
+
+.cursor{
+    background-color: black;
+}
+
+.red{
+    background-color: red;
+}
+
+.azul{
+    background-color: blue;
+}
+
+.yellow{
+    background-color: yellow;
+}
+
+.green{
+    background-color: green;
+}
+
+.quitar{
+    display:none;
+}
