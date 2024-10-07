@@ -3,19 +3,23 @@ let user;
 let idUser;
 let visto = [];
 let ocupado = [];
-var visitados = [];
-let cont;
-var rojos = [];
+let visitados = [];
+let rojos = [];
+let perdido = false;
+let escrito;
+var clicado = [];
+
 const dificultad = {
     '1': [9, 10],
     '2': [16, 40],
     '3': [21, 99]
-}
-var dif = '2';
+};
+var dif = '1';
 var tablero = dificultad[dif][0];
 var minas = dificultad[dif][1];
 
 window.onload = function () {
+    escrito = document.getElementById('perder');
     table = document.getElementById('table');
     hacerTabla();
 };
@@ -31,6 +35,7 @@ const hacerTabla = function () {
         table.appendChild(tr);
     }
     ponerMinas();
+    calcularCasillas();
     for (let i = 0; i <= tablero; i++) {
         for (let j = 0; j <= tablero; j++) {
             document.getElementById(i + '-' + j).addEventListener('mouseenter', cambiarCursor);
@@ -38,7 +43,7 @@ const hacerTabla = function () {
             document.getElementById(i + '-' + j).addEventListener('click', hacerClic);
         }
     }
-}
+};
 
 const ponerMinas = function () {
     ocupado = [];
@@ -53,7 +58,7 @@ const ponerMinas = function () {
         ocupado[i] = lugar;
     }
     calcularMinas(ocupado);
-}
+};
 
 const calcularMinas = function (minas) {
     let avisos = [];
@@ -76,16 +81,27 @@ const calcularMinas = function (minas) {
             rojos.push(aviso);
         }
     });
+};
+
+const calcularCasillas = function(){
+    for (let i = 0; i <= tablero; i++) {
+        for (let j = 0; j <= tablero; j++) {
+            let id = i+'-'+j;
+            if(!inArray(ocupado, id)){
+                clicado.push(id);
+            }
+        }
+    }
 }
 
 const cambiarCursor = function () {
     this.setAttribute('class', 'cursor');
-}
+};
 
 const restablecer = function () {
     let res = document.getElementsByClassName('cursor');
     res[0].setAttribute('class', '');
-}
+};
 
 const desbordar = function (num) {
     if (num < 0) {
@@ -94,9 +110,13 @@ const desbordar = function (num) {
         return tablero;
     }
     return num;
-}
+};
 
 const hacerClic = function (event) {
+    if(perdido){
+        escrito.innerHTML = 'Selecciona dificultad para volver a comenzar';
+        return;
+    }
     if (!event.altKey) {
         marcarXClic(event.target.getAttribute('id'));
         visitados = [];
@@ -104,11 +124,15 @@ const hacerClic = function (event) {
         let marca = document.getElementsByClassName('cursor');
         if(marca[0].getAttribute('style')=='background-color:yellow'){
             marca[0].setAttribute('style', 'background-color:blue');
+            //marca[0].removeChild(marca[0].firstChild);
             return;
         }
         marca[0].setAttribute('style', 'background-color:yellow');
+        // let img = document.createElement('img');
+        // img.setAttribute('src', '../Buscaminas/imagenes/bandera.jpg');
+        // marca[0].appendChild(img);
     }
-}
+};
 
 const marcarXClic = function (id) {
     let marca = document.getElementById(id);
@@ -119,10 +143,13 @@ const marcarXClic = function (id) {
     if (inArray(rojos, id)) {
         marca.setAttribute('style', 'background-color:red');
         marca.innerHTML = calcularAlrededor(id);
+        contarCasilla(id);
+        ganar();
         return;
     }
     marca.setAttribute('style', 'background-color:green');
     visitados.push(id);
+    contarCasilla(id);
     let mostrar = recorrer(marca);
     for (let i = 0; i < mostrar.length; i++) {
         if (!inArray(visitados, mostrar[i])) {
@@ -130,7 +157,15 @@ const marcarXClic = function (id) {
             visitados.push(mostrar[i]);
         }
     }
+    ganar();
     visto = [];
+};
+
+const contarCasilla = function(id){
+    if(inArray(clicado, id)){
+        let c = clicado.indexOf(id);
+        clicado.splice(c, 1);
+    }
 }
 
 const recorrer = function (lugar) {
@@ -158,10 +193,10 @@ const recorrer = function (lugar) {
         }
     }
     return mostrar;
-}
+};
 
 const calcularAlrededor = function(id){
-    cont = 0;
+    let cont = 0;
     let vistos = [];
     let p = id.split('-');
     let u = parseInt(p[0]);
@@ -178,14 +213,25 @@ const calcularAlrededor = function(id){
         }
     }
     return cont;
-}
+};
 
-const perder = function (event) {
+const perder = function(){
+    ocupado.forEach(mina => {
+        let m = document.getElementById(mina);
+        m.setAttribute('style', 'background-color:black');
+        escrito.innerHTML = "Has perdido.";
+        perdido = true;
+    });
+};
+
+const rehacer = function (event) {
     while (table.firstChild) {
         table.removeChild(table.firstChild);
     }
+    escrito.innerHTML='';
+    perdido = false;
     hacerTabla();
-}
+};
 
 const inArray = function (arr, e) {
     for (let i = 0; i < arr.length; i++) {
@@ -198,7 +244,11 @@ const cambiarDificultad = function (num) {
     dif = num;
     tablero = dificultad[dif][0];
     minas = dificultad[dif][1];
-    perder();
-}
+    rehacer();
+};
 
-// numeros en los rojos
+const ganar = function(){
+    if(clicado.length == 0){
+        escrito.innerHTML = 'Enhorabuena';
+    }
+}
