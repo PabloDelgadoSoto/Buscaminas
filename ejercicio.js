@@ -124,13 +124,9 @@ const hacerClic = function (event) {
         let marca = document.getElementsByClassName('cursor');
         if(marca[0].getAttribute('style')=='background-color:yellow'){
             marca[0].setAttribute('style', 'background-color:blue');
-            //marca[0].removeChild(marca[0].firstChild);
             return;
         }
-        marca[0].setAttribute('style', 'background-color:yellow');
-        // let img = document.createElement('img');
-        // img.setAttribute('src', '../Buscaminas/imagenes/bandera.jpg');
-        // marca[0].appendChild(img);
+        marca[0].setAttribute('style', 'background-image:url(bandera.png);background-size:100% 100%;');
     }
 };
 
@@ -218,7 +214,7 @@ const calcularAlrededor = function(id){
 const perder = function(){
     ocupado.forEach(mina => {
         let m = document.getElementById(mina);
-        m.setAttribute('style', 'background-color:black');
+        m.setAttribute('style', 'background-image:url(bomba.jpg);background-size:100% 100%;');
         escrito.innerHTML = "Has perdido.";
         perdido = true;
     });
